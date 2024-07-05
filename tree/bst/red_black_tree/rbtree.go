@@ -9,20 +9,9 @@ const (
 	black = 1
 )
 
-func main() {
-	log.Println("Start ...")
-
-	tree := &RBTree{}
-	for val := 0; val < 100; val++ {
-		tree.Insert(val)
-		tree.ShowInf()
-	}
-	log.Println(tree.Flatten())
-}
-
 type node struct {
 	val   int
-	col   int // 0 (red) and 1(black)
+	col   uint8 // 0 (red) and 1(black)
 	left  *node
 	right *node
 }
@@ -45,20 +34,42 @@ func insert(n *node, val int) *node {
 	}
 	if val < n.val {
 		n.left = insert(n.left, val)
-		if n.left.col == red {
-			if n.left.left.col == red {
-				if n.right.col == black {
-					x := n.left
-					n.left = x.left
-				}
-			} else if n.left.right.col == red {
-
-			}
-		}
 	} else {
 		n.right = insert(n.right, val)
-		if n.right.col == red {
-			// todo
+	}
+	if n.left.col == red && (n.left.left.col == red || n.left.right.col == red) {
+		if n.right.col == black {
+			// rotate
+			x := n.left
+			n.left = x.right
+			x.right = n
+			// change color
+			x.col = black
+			n.col = red
+			// return
+			return x
+		} else {
+			n.left.col = black
+			n.right.col = black
+			n.col = red
+			return n
+		}
+	} else if n.right.col == red && (n.right.left.col == red || n.right.right.col == red) {
+		if n.left.col == black {
+			// rotate
+			x := n.right
+			n.right = x.left
+			x.left = n
+			// change color
+			n.col = red
+			x.col = black
+			// return
+			return x
+		} else {
+			n.left.col = black
+			n.right.col = black
+			n.col = red
+			return n
 		}
 	}
 	return n
